@@ -187,7 +187,22 @@ public class Path {
      * @deprecated Need to be implemented.
      */
     public boolean isValid() {
-        // TODO:
+        if (this.isEmpty()) {
+            return true;
+        }
+
+        if (this.size() == 1 && !(this.getOrigin().hasSuccessors())) {
+            return true;
+        }
+
+        if (getArcs().get(0).getOrigin() == this.getOrigin()){
+            for (int i = 0; i < getArcs().size() - 1; i++) {
+                if (getArcs().get(i).getDestination() == getArcs().get(i + 1).getOrigin()) {
+                    return true;
+                }
+            }
+        }
+
         return false;
     }
 
