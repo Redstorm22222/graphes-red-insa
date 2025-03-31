@@ -198,8 +198,11 @@ public class Path {
      * @deprecated Need to be implemented.
      */
     public float getLength() {
-        // TODO:
-        return 0;
+        float size = 0;
+        for (Arc arc : this.arcs){
+            size += arc.getLength();
+        }
+        return size;
     }
 
     /**
@@ -211,8 +214,11 @@ public class Path {
      * @deprecated Need to be implemented.
      */
     public double getTravelTime(double speed) {
-        // TODO:
-        return 0;
+        double time = 0;
+        for (Arc arc : arcs){
+            time += arc.getTravelTime(speed);
+        }
+        return time;
     }
 
     /**
@@ -223,8 +229,11 @@ public class Path {
      * @deprecated Need to be implemented.
      */
     public double getMinimumTravelTime() {
-        // TODO:
-        return 0;
+        double time = 0;
+        for (Arc arc : arcs){
+            time += arc.getTravelTime(arc.getRoadInformation().getMaximumSpeed());
+        }
+        return time;
     }
 
 }
