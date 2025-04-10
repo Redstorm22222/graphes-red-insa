@@ -29,28 +29,32 @@ public class Path {
      * @throws IllegalArgumentException If the list of nodes is not valid, i.e. two
      *         consecutive nodes in the list are not connected in the graph.
      */
-    public static Path createFastestPathFromNodes(Graph graph, List<Node> nodes) throws IllegalArgumentException {
+    public static Path createFastestPathFromNodes(Graph graph, List<Node> nodes)
+            throws IllegalArgumentException {
         List<Arc> arcs = new ArrayList<Arc>();
         int i;
-        if (nodes.size() == 1){
+        if (nodes.size() == 1) {
             return new Path(graph, nodes.get(0));
         }
 
-        for (i = 0; i<nodes.size()-1;i++) {
+        for (i = 0; i < nodes.size() - 1; i++) {
             Node current = nodes.get(i);
-            Node suivant = nodes.get(i+1);
+            Node suivant = nodes.get(i + 1);
             Arc meilleureRoute = null;
             double max = 1000;
-            for (Arc route : current.getSuccessors()){
-                if (route.getDestination() == suivant && route.getMinimumTravelTime() <= max){
+            for (Arc route : current.getSuccessors()) {
+                if (route.getDestination() == suivant
+                        && route.getMinimumTravelTime() <= max) {
                     meilleureRoute = route;
                     max = route.getRoadInformation().getMaximumSpeed();
                 }
             }
-            if (meilleureRoute != null){
+            if (meilleureRoute != null) {
                 arcs.add(meilleureRoute);
-            }else{
-                throw new IllegalArgumentException("Cannot concatenate an empty list of paths.");
+            }
+            else {
+                throw new IllegalArgumentException(
+                        "Cannot concatenate an empty list of paths.");
             }
         }
         return new Path(graph, arcs);
@@ -65,14 +69,13 @@ public class Path {
      * @return A path that goes through the given list of nodes.
      * @throws IllegalArgumentException If the list of nodes is not valid, i.e. two
      *         consecutive nodes in the list are not connected in the graph.
-     * @deprecated Need to be implemented.
      */
     public static Path createShortestPathFromNodes(Graph graph, List<Node> nodes)
             throws IllegalArgumentException {
         List<Arc> arcs = new ArrayList<Arc>();
 
         if (nodes == null || nodes.isEmpty()) {
-            throw new IllegalArgumentException("Liste de nœuds vide ou nulle");
+            return new Path(graph);
         }
 
         if (nodes.size() == 1) {
@@ -105,27 +108,6 @@ public class Path {
 
         return new Path(graph, arcs);
     }
-
-
-    /*
-     * // s'il y a 1 successeur, on prend cet arc et on va au node suivant if
-     * (actualNode.hasSuccessors() && actualNode.getNumberOfSuccessors() == 1) {
-     * arcs.add(actualNode.getSuccessors().get(0)); actualNode =
-     * actualNode.getSuccessors().get(0).getDestination(); }
-     *
-     * // s'il y a plusieurs successeurs (+ que 1), chercher l'arc avec la dist. la //
-     * plus faible if (actualNode.hasSuccessors() && actualNode.getNumberOfSuccessors()
-     * > 1) { ArrayList<Float> lg = new ArrayList<>(); List<Arc> succ =
-     * actualNode.getSuccessors(); for (int i = 0; i <
-     * actualNode.getNumberOfSuccessors(); i++) { lg.add(succ.get(i).getLength()); }
-     *
-     * // Obtenir la valeur minimale et son index dans la liste float min =
-     * Collections.min(lg); int indexMin = lg.indexOf(min);
-     *
-     * arcs.add(actualNode.getSuccessors().get(indexMin)); actualNode =
-     * actualNode.getSuccessors().get(indexMin).getDestination();
-     */
-
 
     /**
      * Concatenate the given paths.
@@ -259,7 +241,6 @@ public class Path {
      * </ul>
      *
      * @return true if the path is valid, false otherwise.
-     * @deprecated Need to be implemented.
      */
     public boolean isValid() {
 
@@ -298,7 +279,7 @@ public class Path {
      */
     public float getLength() {
         float size = 0;
-        for (Arc arc : this.arcs){
+        for (Arc arc : this.arcs) {
             size += arc.getLength();
         }
         return size;
@@ -313,7 +294,7 @@ public class Path {
      */
     public double getTravelTime(double speed) {
         double time = 0;
-        for (Arc arc : arcs){
+        for (Arc arc : arcs) {
             time += arc.getTravelTime(speed);
         }
         return time;
@@ -327,7 +308,7 @@ public class Path {
      */
     public double getMinimumTravelTime() {
         double time = 0;
-        for (Arc arc : arcs){
+        for (Arc arc : arcs) {
             time += arc.getTravelTime(arc.getRoadInformation().getMaximumSpeed());
         }
         return time;
