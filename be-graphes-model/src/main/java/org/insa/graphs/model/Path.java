@@ -2,7 +2,10 @@ package org.insa.graphs.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.Iterator;
 
 /**
  * <p>
@@ -48,9 +51,62 @@ public class Path {
     public static Path createShortestPathFromNodes(Graph graph, List<Node> nodes)
             throws IllegalArgumentException {
         List<Arc> arcs = new ArrayList<Arc>();
-        // TODO:
+
+        if (nodes == null || nodes.isEmpty()) {
+            throw new IllegalArgumentException("Liste de nœuds vide ou nulle");
+        }
+
+        if (nodes.size() == 1) {
+            return new Path(graph, nodes.get(0));
+        }
+
+        for (int i = 0; i < nodes.size() - 1; i++) {
+            Node from = nodes.get(i);
+            Node to = nodes.get(i + 1);
+
+            List<Arc> candidats = new ArrayList<>();
+
+            // On regard s'il y a un chemin vers le noeud qu'on veut (de from vers to)
+            for (Arc arc : from.getSuccessors()) {
+                if (arc.getDestination().equals(to)) {
+                    candidats.add(arc);
+                }
+            }
+
+            if (candidats.isEmpty()) {
+                throw new IllegalArgumentException(
+                        "Pas d'arc" + from.getId() + " qui va vers " + to.getId());
+            }
+
+            // Choix du plus court arc parmi les candidats
+            Arc meilleur = Collections.min(candidats,
+                    Comparator.comparingDouble(Arc::getLength));
+            arcs.add(meilleur);
+        }
+
         return new Path(graph, arcs);
     }
+
+
+    /*
+     * // s'il y a 1 successeur, on prend cet arc et on va au node suivant if
+     * (actualNode.hasSuccessors() && actualNode.getNumberOfSuccessors() == 1) {
+     * arcs.add(actualNode.getSuccessors().get(0)); actualNode =
+     * actualNode.getSuccessors().get(0).getDestination(); }
+     *
+     * // s'il y a plusieurs successeurs (+ que 1), chercher l'arc avec la dist. la //
+     * plus faible if (actualNode.hasSuccessors() && actualNode.getNumberOfSuccessors()
+     * > 1) { ArrayList<Float> lg = new ArrayList<>(); List<Arc> succ =
+     * actualNode.getSuccessors(); for (int i = 0; i <
+     * actualNode.getNumberOfSuccessors(); i++) { lg.add(succ.get(i).getLength()); }
+     *
+     * // Obtenir la valeur minimale et son index dans la liste float min =
+     * Collections.min(lg); int indexMin = lg.indexOf(min);
+     *
+     * arcs.add(actualNode.getSuccessors().get(indexMin)); actualNode =
+     * actualNode.getSuccessors().get(indexMin).getDestination();
+     */
+
 
     /**
      * Concatenate the given paths.
@@ -187,23 +243,33 @@ public class Path {
      * @deprecated Need to be implemented.
      */
     public boolean isValid() {
-        if (this.isEmpty()) {
+
+        List<Arc> arcs = getArcs();
+
+        // Cas 1 : Chemin vide
+        if (arcs.isEmpty()) {
             return true;
         }
 
-        if (this.size() == 1 && !(this.getOrigin().hasSuccessors())) {
+        // Cas 2 : Chemin avec un seul nœud (aucun arc)
+        if (arcs.isEmpty() && getOrigin() != null) {
             return true;
         }
 
-        if (getArcs().get(0).getOrigin() == this.getOrigin()){
-            for (int i = 0; i < getArcs().size() - 1; i++) {
-                if (getArcs().get(i).getDestination() == getArcs().get(i + 1).getOrigin()) {
-                    return true;
-                }
+        // Cas 3 : Il faut que le premier arc parte bien de l'origine du chemin
+        if (!arcs.get(0).getOrigin().equals(getOrigin())) {
+            return false;
+        }
+
+        // Vérifier que chaque arc est correctement enchaîné
+        for (int i = 0; i < arcs.size() - 1; i++) {
+            if (!arcs.get(i).getDestination().equals(arcs.get(i + 1).getOrigin())) {
+                return false;
             }
         }
 
-        return false;
+        // Si toutes les vérifications sont passées, c'est valide
+        return true;
     }
 
     /**
