@@ -134,19 +134,23 @@ public class BinaryHeap<E extends Comparable<E>> implements PriorityQueue<E> {
 
     @Override
     public void remove(E x) throws ElementNotFoundException {
-        if (this.isEmpty()) throw new ElementNotFoundException("Liste vide");
+        //Vérification si le tas est vide
+        if (this.isEmpty()) throw new ElementNotFoundException(x);
+        //Vérification de la présence de l'élément dans le tas
         int index = this.array.indexOf(x);
-        if (index == -1) throw new ElementNotFoundException(x);
+        if (index == -1 || index >= this.currentSize ) throw new ElementNotFoundException(x);
 
-
+        // Cas 1 : l'élément est à l'intérieur du tas 
         if (index != this.currentSize-1){
-            this.arraySet(index, this.array.get(this.currentSize-1));
+            this.arraySet(index, this.array.get(this.currentSize-1)); //On le remplace par le dernier élément et on percole en conséquence
+            if (index > 0 && this.array.get(index).compareTo(this.array.get(this.indexParent(index)))<0){
+                this.percolateUp(index);
+            }else{
+                this.percolateDown(index);
+            }
         }
-        if (index > 0 && this.array.get(index).compareTo(this.array.get(this.indexParent(index)))<0){
-            this.percolateUp(index);
-        }else{
-            this.percolateDown(index);
-        }
+        // Cas 2 : l'élément est à l'exterieur du tas, pas besoin de réorganiser
+        // On supprime le dernier élément et on décrément la taille du tas
         this.array.remove(this.currentSize-1);
         this.currentSize--;
     }
