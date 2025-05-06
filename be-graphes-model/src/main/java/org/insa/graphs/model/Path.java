@@ -88,7 +88,7 @@ public class Path {
 
             List<Arc> candidats = new ArrayList<>();
 
-            // On regard s'il y a un chemin vers le noeud qu'on veut (de from vers to)
+            // On regarde s'il y a un chemin vers le noeud qu'on veut (de from vers to)
             for (Arc arc : from.getSuccessors()) {
                 if (arc.getDestination().equals(to)) {
                     candidats.add(arc);
