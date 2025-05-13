@@ -1,18 +1,19 @@
 package org.insa.graphs.algorithm.shortestpath;
 
+import org.insa.graphs.model.Arc;
 import org.insa.graphs.model.Node;
 
 public class Label implements Comparable<Label> {
     private Node sommetCourant;
     private boolean marque;
     private double currentCoutMin;
-    private Node sommetPere;
+    private Arc Pere;
 
-    public Label(Node sommetCourant, Boolean marque, double currentCoutMin, Node sommetPere){
+    public Label(Node sommetCourant, Boolean marque, double currentCoutMin, Arc Pere){
         this.sommetCourant = sommetCourant;
         this.marque = marque;
         this.currentCoutMin = currentCoutMin;
-        this.sommetPere = sommetPere;
+        this.Pere = Pere;
     }
 
     public double GetCost(){
@@ -31,12 +32,12 @@ public class Label implements Comparable<Label> {
         this.sommetCourant = newSommC;
     }
 
-    public Node GetSommetPere(){
-        return this.sommetPere;
+    public Arc GetPere(){
+        return this.Pere;
     }
 
-    public void SetSommetPere(Node newSommP){
-        this.sommetPere = newSommP;
+    public void SetPere(Arc newSommP){
+        this.Pere = newSommP;
     }
 
     public boolean GetMarque(){
@@ -50,6 +51,19 @@ public class Label implements Comparable<Label> {
     public void Associer(Node node){
         this.sommetCourant = node;
     }
+
+    public void Afficher(){
+        if (Pere == null){
+        System.out.println("ID = " + sommetCourant.getId()+ "|" + "etat = " + marque + "|" + "coût actuel minimal = " 
+        + currentCoutMin+ "|" + "Arc : null" );
+
+        }else{
+        System.out.println("ID = " + sommetCourant.getId()+ "|" + "etat = " + marque + "|" + "coût actuel minimal = " 
+        + currentCoutMin+ "|" + "Arc : " + Pere.getOrigin().getId() + "-->" + Pere.getDestination().getId());
+
+        }
+    }
+    
 
     @Override
     public int compareTo(Label arg0) {
