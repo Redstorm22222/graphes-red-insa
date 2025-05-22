@@ -15,6 +15,7 @@ import org.insa.graphs.algorithm.AbstractSolution.Status;
 import org.insa.graphs.algorithm.shortestpath.Label;
 
 import org.insa.graphs.algorithm.utils.BinaryHeap;
+import org.insa.graphs.algorithm.utils.ElementNotFoundException;
 
 import java.lang.Math;
 
@@ -34,83 +35,101 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         final ShortestPathData data = getInputData();
         final Graph graph = data.getGraph();
         final int nbNodes = graph.size();
-
-        // Initialize array of predecessors.
-        Arc[] predecessorArcs = new Arc[nbNodes];
-
         // variable that will contain the solution of the shortest path problem
         ShortestPathSolution solution = null;
 
-        Label[] distances = new Label[nbNodes];
+        Label[] labels = new Label[nbNodes];
         BinaryHeap tasDij = new BinaryHeap<Label>();
+
+        // Notify observers about the first event (origin processed).
+        notifyOriginProcessed(data.getOrigin());
 
         //INITIALISATION
         System.out.println("################ INITIALISATION DU TABLEAU DISTANCES ################");
-        for (int i=0; i<nbNodes; i++){
-            distances[i] = new Label(graph.get(i), false, 0, null);
+        /* for (int i=0; i<nbNodes; i++){
+            labels[i] = new Label(graph.get(i), false, 0, null);
             if (i != data.getOrigin().getId()) {
 
-                distances[i].SetCost(Double.POSITIVE_INFINITY);
+                labels[i].SetCost(Double.POSITIVE_INFINITY);
             }
-            distances[i].Afficher();
-            tasDij.insert(distances[i]);
-            
-        }
+            labels[i].Afficher();
+        } */
         
+        labels[data.getOrigin().getId()] = new Label(data.getOrigin(), false, 0, null);
+        tasDij.insert(labels[data.getOrigin().getId()]);
 
         //ALGORITHM ITSELF
         System.out.println("################ DÉBUT DE L'ALGORITHME ################");
         int cpt = 0;//compteur pour suivre l'avancée de la boucle
         while (!tasDij.isEmpty()){
-            Label ori = (Label) tasDij.deleteMin(); //sommet courant
+            Label x = (Label) tasDij.deleteMin(); //sommet courant
             System.out.println("ITÉRATION N°"+cpt);
-            System.out.println("|--- ID du sommet actuel : " + ori.GetSommetCourant().getId());
-            ori.SetMarque(true);
-            distances[ori.GetSommetCourant().getId()].SetMarque(true);
+            System.out.println("|--- ID du sommet actuel : " + x.GetSommetCourant().getId());
+            x.SetMarque(true);
+            if (x.GetSommetCourant() == data.getDestination()){
+                break;
+            }
 
-            List<Arc> successors = ori.GetSommetCourant().getSuccessors();
+            //distances[x.GetSommetCourant().getId()].SetMarque(true);
+
+            List<Arc> successors = x.GetSommetCourant().getSuccessors(); //liste de tous les successeurs de x
 
             for (int i = 0; i < successors.size(); i++){
-
-                Label y = distances[successors.get(i).getDestination().getId()]; //y = chaque successeur
-
+                if (labels[successors.get(i).getDestination().getId()] == null){
+                    labels[successors.get(i).getDestination().getId()] = new Label(successors.get(i).getDestination(), false, Double.POSITIVE_INFINITY, successors.get(i));
+                }
+                Label y = labels[successors.get(i).getDestination().getId()];
                 if (!y.GetMarque()){
-                    if (y.GetCost() > ori.GetCost() + data.getCost(successors.get(i))){
-                        tasDij.remove(y);
-                        y.SetCost(ori.GetCost() + data.getCost(successors.get(i)));
+                    if (y.GetCost() > x.GetCost() + data.getCost(successors.get(i))){
+                        if (Double.isInfinite(y.GetCost())
+                            && Double.isFinite(x.GetCost() + data.getCost(successors.get(i))))
+                        {
+                            notifyNodeReached(y.GetSommetCourant());
+                        }
+                        try {
+                            
+                            tasDij.remove(y);
+
+                        } catch(ElementNotFoundException e) {
+
+                            //nothing
+
+                        }
+                        y.SetCost(x.GetCost() + data.getCost(successors.get(i)));
                         y.SetPere(successors.get(i));
                         tasDij.insert(y); //Update
                     }
-
-                    //y.SetCost(Math.min(y.GetCost(), solutionCost+successors.get(i).getLength()));
-
                 }
             }            
             cpt +=1;
-
         }
         System.out.println("################ SORTIE DE LA BOUCLE ################");
+
         
-        
-// Destination has no predecessor, the solution is infeasible...
-        if (distances[data.getDestination().getId()].GetPere() == null) {
+        // Destination has no predecessor, the solution is infeasible...
+        if (labels[data.getDestination().getId()] == null) {
             solution = new ShortestPathSolution(data, Status.INFEASIBLE);
         }
         else {
 
             // The destination has been found, notify the observers.
             notifyDestinationReached(data.getDestination());
-
+            System.out.println("doody1");
             // Create the path from the array of predecessors...
             ArrayList<Arc> arcs = new ArrayList<>();
-            Arc arc = distances[data.getDestination().getId()].GetPere();
+            Arc arc = labels[data.getDestination().getId()].GetPere();
+            System.out.println("doody2");
+
             while (arc != null) {
                 arcs.add(arc);
-                arc = distances[arc.getOrigin().getId()].GetPere();
+                System.out.println(arc);
+                arc = labels[arc.getOrigin().getId()].GetPere();
             }
+            
 
             // Reverse the path...
             Collections.reverse(arcs);
+            System.out.println("doody4");
 
             // Create the final solution.
             solution = new ShortestPathSolution(data, Status.OPTIMAL,
