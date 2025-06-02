@@ -27,6 +27,8 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
 
     @Override
     protected ShortestPathSolution doRun() {
+        //System.out.println("----- Début algorithme de Dijkstra -----");        
+
         //############################
         //DÉCLARATIONS DES VARIABLES
         //############################
@@ -48,8 +50,8 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         //#############################
         //INITIALISATION DU PROGRAMME
         //#############################
+        //System.out.println(">   Initialisation...");
 
-        System.out.println("################ INITIALISATION DU PROGRAMME ################");        
         labels[origin_id] = new Label(origin_node, false, 0, null);
         tasDij.insert(labels[origin_id]);
         // Notify observers about the first event (origin processed).
@@ -58,8 +60,8 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         //#############################
         //ALGORITHME
         //#############################
+        //System.out.println(">   Execution...");
 
-        System.out.println("################ DÉBUT DE L'ALGORITHME ################");
         while (!tasDij.isEmpty()){
             Label current_label = (Label) tasDij.deleteMin();       //Current Label
             Node  current_node  = current_label.GetSommetCourant(); //Current Node
@@ -67,7 +69,7 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
             current_label.SetMarque(true);
             //If we have found the destination, no need to continue
             if (current_node == destination_node){
-                System.out.println("################ BREAK ################");
+                //System.out.println(">   Solution trouvée ! break !");
                 break;
             }
 
@@ -104,7 +106,7 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
                 }
             }            
         }
-        System.out.println("################ FIN DE L'ALGORITHME ################");
+        //System.out.println("> Construction de la solution...");
 
         
         // Destination has no predecessor, the solution is infeasible...

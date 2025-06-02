@@ -185,6 +185,15 @@ public class Path {
         this.origin = arcs.size() > 0 ? arcs.get(0).getOrigin() : null;
     }
 
+    public List<Node> getNodesFromPath(){
+        List<Node> list = new ArrayList<>();
+        list.add(origin);
+        for (Arc arc : arcs){
+            list.add(arc.getDestination());
+        }
+        return list;
+    }
+
     /**
      * @return Graph containing the path.
      */
