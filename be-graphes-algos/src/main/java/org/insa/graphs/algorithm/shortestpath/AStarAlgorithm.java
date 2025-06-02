@@ -44,7 +44,7 @@ public class AStarAlgorithm extends DijkstraAlgorithm {
 
         System.out.println("################ INITIALISATION DU PROGRAMME ################");        
         labels[origin_id] = new LabelStar(origin_node, false, 0, 
-                            null,origin_node.getPoint().distanceTo(destination_node.getPoint()));
+                            null,data);
         tasDij.insert(labels[origin_id]);
         // Notify observers about the first event (origin processed).
         notifyOriginProcessed(origin_node);
@@ -75,7 +75,7 @@ public class AStarAlgorithm extends DijkstraAlgorithm {
                 //If we visit this node for the first time
                 if (labels[next_id] == null){
                     labels[next_id] = new LabelStar(next_node, false, Double.POSITIVE_INFINITY, 
-                                        next_arc, next_node.getPoint().distanceTo(destination_node.getPoint()));
+                                        next_arc, data);
                     notifyNodeReached(next_node);
                 }
 
