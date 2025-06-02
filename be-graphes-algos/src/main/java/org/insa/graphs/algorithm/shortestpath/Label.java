@@ -20,6 +20,10 @@ public class Label implements Comparable<Label> {
         return this.currentCoutMin;
     }
 
+    public double getTotalCost(){
+        return this.GetCost();
+    }
+
     public void SetCost(double newCost){
         this.currentCoutMin = newCost;
     }
@@ -67,11 +71,11 @@ public class Label implements Comparable<Label> {
 
     @Override
     public int compareTo(Label arg0) {
-        if (this.currentCoutMin < arg0.currentCoutMin){
+        if (this.getTotalCost() < arg0.getTotalCost()){
 
             return -1;
 
-        } else if (this.currentCoutMin == arg0.currentCoutMin) {
+        } else if (this.getTotalCost() == arg0.getTotalCost()) {
 
             return 0;
 
