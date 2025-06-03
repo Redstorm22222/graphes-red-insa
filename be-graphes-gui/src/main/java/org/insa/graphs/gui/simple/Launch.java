@@ -426,6 +426,9 @@ public class Launch {
         System.out.println("################################################################");
         System.out.println("####### TESTS DE CHEMINS COURTS ################################");
         System.out.println("################################################################\n");
+        //Tentative de randomisation abandonnée en raison de la non connexité des cartes
+        //Bien que le code proposé soit correct, il nous est apparu que cette méthode de 
+        //test n'était pas viable dans notre cas
         //for (int i = 0; i<3;i++){
         //    System.out.println("TEST N°" + i + ":");
         //    data = BuildRandomTest("paris", 0); 
