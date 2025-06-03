@@ -116,8 +116,10 @@ public class ArcInspectorFactory {
     public static List<ArcInspector> getAllFilters() {
         // Add your own filters here (do not forget to implement toString()
         // to get an understandable output!):
-        return Arrays.asList(new NoFilterByLengthArcInspector(),
-                new OnlyCarsByLengthArcInspector(), new OnlyCarsByTimeArcInspector(),
+        return Arrays.asList(
+                new NoFilterByLengthArcInspector(),
+                new OnlyCarsByLengthArcInspector(), 
+                new OnlyCarsByTimeArcInspector(),
                 new OnlyPedestrianByTime());
     }
 

@@ -28,6 +28,7 @@ import org.insa.graphs.model.io.BinaryPathReader;
 import org.insa.graphs.model.io.GraphReader;
 import org.insa.graphs.model.io.PathReader;
 
+import java.util.List;
 import java.util.Random;
 
 public class Launch {
@@ -55,12 +56,15 @@ public class Launch {
         return basicDrawing;
     }
 
-    public static boolean AssertEquals (double a, double b) throws NotIdenticPaths{
-        if (a - b > 0.0001) throw new NotIdenticPaths("EXECUTION ERROR : Not identic paths !");
-        return true;
+    public static void AssertEquals (double a, double b) throws FailTest{
+        if (a - b > 0.0001) throw new FailTest("EXECUTION ERROR : Not identic paths !");
     }
 
-    public static void Compare_Dijkstra_Path(ShortestPathData data){
+    public static void AssertValid (Path path) throws FailTest{
+        if (!path.isValid()) throw new FailTest("EXECUTION ERROR : Path invalid !");
+    }
+
+    public static void Compare_Dijkstra_Path(ShortestPathData data) throws FailTest{
         //###############################
         // EXECUTION DE L'ALGORITHME
         //###############################
@@ -78,23 +82,19 @@ public class Launch {
         //###############################
         // VERIFICATION 
         //###############################
-        try {
-            if (data.getMode() == Mode.LENGTH){
-                AssertEquals(resultat_dijkstra.getPath().getLength(),Cout);
-                System.out.println("--- Chemin trouvé par Dijkstra :        " + resultat_dijkstra.getPath().getLength() + " m.");
-                System.out.println("--- Chemin trouvé par la classe Path :  " + Cout + " m.");
-            }else{
-                AssertEquals(resultat_dijkstra.getPath().getMinimumTravelTime(),Cout);
-                System.out.println("--- Chemin trouvé par Dijkstra :        " + resultat_dijkstra.getPath().getMinimumTravelTime() + " min.");
-                System.out.println("--- Chemin trouvé par la classe Path :  " + Cout + " min.");
-            }
-            System.out.println("--- SUCCESS");
-        }catch(NotIdenticPaths e){
-            System.out.println(e);
+        AssertValid(resultat_dijkstra.getPath());
+        if (data.getMode() == Mode.LENGTH){
+            AssertEquals(resultat_dijkstra.getPath().getLength(),Cout);
+            System.out.println("--- Chemin trouvé par Dijkstra :        " + resultat_dijkstra.getPath().getLength() + " m.");
+            System.out.println("--- Chemin trouvé par la classe Path :  " + Cout + " m.");
+        }else{
+            AssertEquals(resultat_dijkstra.getPath().getMinimumTravelTime(),Cout);
+            System.out.println("--- Chemin trouvé par Dijkstra :        " + resultat_dijkstra.getPath().getMinimumTravelTime() + " sec.");
+            System.out.println("--- Chemin trouvé par la classe Path :  " + Cout + " sec.");
         }
     }
 
-    public static void Compare_Dijkstra_Bellman(ShortestPathData data){
+    public static void Compare_Dijkstra_Bellman(ShortestPathData data) throws FailTest{
         //###############################
         // EXECUTION DE L'ALGORITHME
         //###############################
@@ -106,23 +106,19 @@ public class Launch {
         //###############################
         // VERIFICATION 
         //###############################
-        try {
-            if (data.getMode() == Mode.LENGTH){
-                AssertEquals(resultat_dijkstra.getPath().getLength(),resultat_bellman.getPath().getLength());
-                System.out.println("--- Chemin trouvé par Dijkstra :        " + resultat_dijkstra.getPath().getLength() + " m.");
-                System.out.println("--- Chemin trouvé par Bellman-Ford :    " + resultat_bellman.getPath().getLength() + " m.");
-            }else{
-                AssertEquals(resultat_dijkstra.getPath().getMinimumTravelTime(),resultat_bellman.getPath().getMinimumTravelTime());
-                System.out.println("--- Chemin trouvé par Dijkstra :        " + resultat_dijkstra.getPath().getMinimumTravelTime() + " min.");
-                System.out.println("--- Chemin trouvé par Bellman-Ford :    " + resultat_bellman.getPath().getMinimumTravelTime() + " min.");
-            }
-            System.out.println("--- SUCCESS");
-        }catch(NotIdenticPaths e){
-            System.out.println(e);
+        AssertValid(resultat_dijkstra.getPath());
+        if (data.getMode() == Mode.LENGTH){
+            AssertEquals(resultat_dijkstra.getPath().getLength(),resultat_bellman.getPath().getLength());
+            System.out.println("--- Chemin trouvé par Dijkstra :        " + resultat_dijkstra.getPath().getLength() + " m.");
+            System.out.println("--- Chemin trouvé par Bellman-Ford :    " + resultat_bellman.getPath().getLength() + " m.");
+        }else{
+            AssertEquals(resultat_dijkstra.getPath().getMinimumTravelTime(),resultat_bellman.getPath().getMinimumTravelTime());
+            System.out.println("--- Chemin trouvé par Dijkstra :        " + resultat_dijkstra.getPath().getMinimumTravelTime() + " sec.");
+            System.out.println("--- Chemin trouvé par Bellman-Ford :    " + resultat_bellman.getPath().getMinimumTravelTime() + " sec.");
         }
     }
 
-    public static void Test_Infeasible(ShortestPathData data){
+    public static void Test_Infeasible(ShortestPathData data) throws FailTest{
         //###############################
         // EXECUTION DE L'ALGORITHME
         //###############################
@@ -134,9 +130,16 @@ public class Launch {
         //###############################
         if (resultat_dijkstra.getStatus() == Status.INFEASIBLE){
             System.out.println("Dijkstra : Aucun chemin n'a été trouvé ");
-            System.out.println("SUCCESS");
         }else{
-            System.out.println("FAIL");
+            throw new FailTest("INFEASIBLE TESTS ERROR");
+        }
+    }
+
+    public static void Wave_Short_Test(int [] TabTests,String map, int arcinspector) throws Exception {
+        for (int i = 0; i < TabTests.length-1 ; i++){
+            ShortestPathData data = BuildTest(TabTests[i], TabTests[i+1], map, arcinspector); 
+            Compare_Dijkstra_Path(data);
+            Compare_Dijkstra_Bellman(data);
         }
     }
 
@@ -172,108 +175,193 @@ public class Launch {
             System.out.println("Chemin trouvé par Bellman : " + resultat_bellman.getPath().getLength() + " km.");
             System.out.println("Chemin trouvé par Dijkstra : " + resultat_dijkstra.getPath().getLength() + " km.");
             System.out.println("Les 3 algorithmes renvoient des résultats cohérents et similaires !");
-        }catch(NotIdenticPaths e){
+        }catch(FailTest e){
             System.out.println(e);
         }
 }
 
-    public static void main(String[] args) throws Exception {
-
-        // visit these directory to see the list of available files on commetud.
-        String mapName ;
+    public static ShortestPathData BuildTest(int originNode_id, int destinationNode_id, String map, int arcinspector) throws Exception {
         Graph graph;
-        Node originNode ;
-        Node destinationNode ;
-        ShortestPathData data;
-        
-        System.out.println("\n[Tests infaisables] ------------------------------");
-        mapName ="/home/eloi/Bureau/cartes/bretagne.mapgr";
+        String full_mapName ="/home/eloi/Bureau/cartes/" + map + ".mapgr";
         try (GraphReader reader = new BinaryGraphReader(new DataInputStream(
-            new BufferedInputStream(new FileInputStream(mapName))))) {
+            new BufferedInputStream(new FileInputStream(full_mapName))))) {
 
         graph = reader.read();
         }
-        originNode = graph.get(372251);     //île de Belle-Île
-        destinationNode = graph.get(41656); //Ville de Rennes
-        data = new ShortestPathData(graph, originNode, destinationNode, ArcInspectorFactory.getAllFilters().get(0));
-        System.out.println("Test 1 : Belle-île --> Rennes");
-        Test_Infeasible(data);
-
-        originNode = graph.get(28673);      //île de Groix
-        destinationNode = graph.get(86314); //Vile de Quimper
-        data = new ShortestPathData(graph, originNode, destinationNode, ArcInspectorFactory.getAllFilters().get(0));
-        System.out.println("Test 2 : Groix --> Quimper");
-        Test_Infeasible(data);
-
-
-
-
-
-
-        System.out.println("\n[Tests chemins nuls] ------------------------------");
-        originNode = graph.get(28673);      //île de Groix
-        destinationNode = graph.get(28673); //île de Groix
-        data = new ShortestPathData(graph, originNode, destinationNode, ArcInspectorFactory.getAllFilters().get(0));
-        System.out.println("Test 1 : Rennes --> Rennes en distance");
-        Compare_Dijkstra_Path(data);
-
-
-
-
-
-
-        System.out.println("\n[Tests chemins courts] ------------------------------");
-        mapName ="/home/eloi/Bureau/cartes/paris.mapgr";
-        try (GraphReader reader = new BinaryGraphReader(new DataInputStream(
-            new BufferedInputStream(new FileInputStream(mapName))))) {
-
-        graph = reader.read();
-        }
-        originNode = graph.get(12620);
-        destinationNode = graph.get(39307);
-        data = new ShortestPathData(graph, originNode, destinationNode, ArcInspectorFactory.getAllFilters().get(0));
-        System.out.println("Test 1 : Paris");
-        Compare_Dijkstra_Path(data);
-        Compare_Dijkstra_Bellman(data);
-
-        originNode = graph.get(12620);
-        destinationNode = graph.get(39307);
-        data = new ShortestPathData(graph, originNode, destinationNode, ArcInspectorFactory.getAllFilters().get(0));
-        System.out.println("Test 1 : Toulouse");
-        Compare_Dijkstra_Path(data);
-        Compare_Dijkstra_Bellman(data);
-
-
-
-
-
-
-        /* System.out.println("VAGUE DE TEST : PARIS, SHORTEST ------------------------------");
-        for (int i = 0; i<3;i++){
-            System.out.println("TEST N°" + i + ":");
-            Random r= new Random();
-            int bound = graph.getNodes().size();
-            originNode = graph.get(r.nextInt(bound));
-            destinationNode = graph.get(r.nextInt(bound));
-            data = new ShortestPathData(graph, originNode, destinationNode, ArcInspectorFactory.getAllFilters().get(0));
-            Compare_Dijkstra_Path(data);
-        }
-
-        System.out.println("VAGUE DE TEST : PARIS, FASTEST ------------------------------");
-        for (int i = 0; i<3;i++){
-            System.out.println("TEST N°" + i + ":");
-            Random r= new Random();
-            int bound = graph.getNodes().size();
-            originNode = graph.get(r.nextInt(bound));
-            destinationNode = graph.get(r.nextInt(bound));
-            data = new ShortestPathData(graph, originNode, destinationNode, ArcInspectorFactory.getAllFilters().get(1));
-            Compare_Dijkstra_Path(data); 
-        } */
-        
+        Node originNode = graph.get(originNode_id);
+        Node destinationNode = graph.get(destinationNode_id); 
+        return new ShortestPathData(graph, originNode, destinationNode, ArcInspectorFactory.getAllFilters().get(arcinspector));
     }
 
+    public static ShortestPathData BuildRandomTest(String map, int arcinspector) throws Exception {
+        Graph graph;
+        String full_mapName ="/home/eloi/Bureau/cartes/" + map + ".mapgr";
+        try (GraphReader reader = new BinaryGraphReader(new DataInputStream(
+            new BufferedInputStream(new FileInputStream(full_mapName))))) {
+
+        graph = reader.read();
+        }
+        Random r= new Random();
+        int bound = graph.getNodes().size();
+        Node originNode = graph.get(r.nextInt(bound));
+        Node destinationNode = graph.get(r.nextInt(bound)); 
+        return new ShortestPathData(graph, originNode, destinationNode, ArcInspectorFactory.getAllFilters().get(arcinspector));
+    }
+
+    /*
+    public static void runFullTest(Graph graph, int originId, int destinationId, Drawing draw) throws Exception {
+        Node origin = graph.get(originId);
+        Node destination = graph.get(destinationId);
+        List<Mode> modes = List.of(Mode.LENGTH, Mode.TIME);
+        for (Mode mode : modes) {
+            ShortestPathData data = new ShortestPathData(
+                    graph,
+                    origin,
+                    destination,
+                    // On choisit l’ArcInspector en fonction du Mode :
+                    //  -> si Mode.LENGTH, on prend l’inspecteur “distance” (index 0)
+                    //  -> si Mode.TIME, on prend l’inspecteur “temps” (index 1)
+                    ArcInspectorFactory.getAllFilters().get(
+                        (mode == Mode.LENGTH) ? 0 : 1
+                    )
+            );
+            System.out.println("\n===== Mode de test : " + mode + " =====");
+            if (!origin.equals(destination)) {
+                System.out.println("→ Test d’infaisable (origin ≠ dest)");
+                Test_Infeasible(data);
+            } else {
+                System.out.println("→ Test de chemin nul (origin == dest)");
+                Compare_Dijkstra_Path(data);
+            }
+            System.out.println("→ Vérif. Dijkstra Path pour le coût (" + mode + ")");
+            Compare_Dijkstra_Path(data);
+            System.out.println("→ Vérif. Dijkstra Bellman‐Ford (" + mode + ")");
+            Compare_Dijkstra_Bellman(data);
+            if (draw != null) {
+                System.out.println("→ Trace des chemins trouvés dans le Drawing…");
+                draw.drawGraph(graph);
+                ShortestPathSolution solDij = new DijkstraAlgorithm(data).run();
+                ShortestPathSolution solBel = new BellmanFordAlgorithm(data).run();
+                draw.drawPath(solDij.getPath(), false);
+                draw.drawPath(solBel.getPath(), false);
+            }
+        }
+    }
+     */
+
+    public static void main(String[] args) throws Exception, FailTest {
+
+        ShortestPathData data;
+        
+        System.out.println("################################################################");
+        System.out.println("####### TESTS INFAISABLES ######################################");
+        System.out.println("################################################################\n");
+        System.out.println("Test 1 : BRETAGNE : Belle-île --> Rennes");
+        
+        try {
+            //île de Belle-Île
+            //Ville de Rennes
+            data = BuildTest(372251, 41656, "bretagne", 0); 
+            Test_Infeasible(data);
+
+            //île de Groix
+            //Vile de Quimper
+            System.out.println("Test 2 : BRETAGNE : Groix --> Quimper");
+            data = BuildTest(28673, 86314, "bretagne", 0); 
+            Test_Infeasible(data);
+
+            //île de Marie-Galante
+            //île de La Désirade
+            System.out.println("Test 3 : GUADELOUPE : Marie-Galante --> La Désirade");
+            data = BuildTest(4232, 12748, "guadeloupe", 0); 
+            Test_Infeasible(data);
+
+            //TODO : 
+            /* //Corse
+            //France métropolitaine
+            System.out.println("Test 3 : FRANCE METROPOLITAINE : Corse --> Marseille");
+            data = BuildTest(4232, 12748, "guadeloupe", 0); 
+            Test_Infeasible(data); */
+
+            System.out.println("✅ All tests validated");
+        } catch (FailTest e) {
+            System.out.println("❌ FAIL : TESTS INFAISABLES");
+        }
 
 
 
+
+        System.out.println("\n");
+        System.out.println("################################################################");
+        System.out.println("####### TESTS DE CHEMINS NULS ##################################");
+        System.out.println("################################################################\n");
+        try {
+            //île de Groix
+            //île de Groix
+            System.out.println("Test 1 : Rennes --> Rennes en distance");
+            data = BuildTest(28673, 28673, "bretagne", 0); 
+            Compare_Dijkstra_Path(data);
+
+
+            System.out.println("✅ All tests validated");
+        } catch (FailTest e) {
+            System.out.println("❌ FAIL : TESTS CHEMINS NULS");
+        }
+
+
+
+
+        System.out.println("\n");
+        System.out.println("################################################################");
+        System.out.println("####### TESTS DE CHEMINS COURTS ################################");
+        System.out.println("################################################################\n");
+        //for (int i = 0; i<3;i++){
+        //    System.out.println("TEST N°" + i + ":");
+        //    data = BuildRandomTest("paris", 0); 
+        //    Compare_Dijkstra_Path(data);
+        //}
+        try {
+            System.out.println("Vague 1 : Plus courts chemins à Paris en voiture");
+            int [] TestsParis = {   18542,31357,
+                                    9947,6776,
+                                    12620,39307};
+            Wave_Short_Test(TestsParis,"paris",0);
+            System.out.println("Vague 2 : Chemins les plus rapides à Toulouse en voiture");
+            int [] TestsToulouse = {8755,2212,
+                                    13507,23549,
+                                    4143,1271};
+            Wave_Short_Test(TestsToulouse,"toulouse",2);
+            System.out.println("Vague 3 : Être le plus rapide à Bordeaux à pied");
+            int [] TestsBordeaux = {653,6459,
+                                    5248,14956,
+                                    15132,12216};
+            Wave_Short_Test(TestsBordeaux,"bordeaux",2);
+
+
+            System.out.println("✅ All tests validated");
+        } catch (FailTest e) {
+            System.out.println("❌ FAIL : TESTS CHEMINS COURTS");
+        }
+        
+        
+
+
+        System.out.println("\n");
+        System.out.println("################################################################");
+        System.out.println("####### TESTS DE CHEMINS LONGS #################################");
+        System.out.println("################################################################\n");
+        System.out.println("Test 1 : Rennes --> Brest en distance");
+        try{
+            data = BuildTest(41675, 75642, "bretagne", 0); 
+            Compare_Dijkstra_Path(data);
+            System.out.println("Test 2 : Port-Au-Prince --> Higûhey en temps");
+            data = BuildTest(83370, 201656, "bretagne", 2); 
+            Compare_Dijkstra_Path(data);
+
+            System.out.println("✅ All tests validated");
+        } catch (FailTest e) {
+            System.out.println("❌ FAIL : TESTS CHEMINS COURTS");
+        }
+        }
 
 }
