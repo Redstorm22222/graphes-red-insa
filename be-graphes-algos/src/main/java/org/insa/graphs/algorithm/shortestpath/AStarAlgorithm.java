@@ -41,8 +41,8 @@ public class AStarAlgorithm extends DijkstraAlgorithm {
         //#############################
         //INITIALISATION DU PROGRAMME
         //#############################
-
-        System.out.println("################ INITIALISATION DU PROGRAMME ################");        
+        //System.out.println("################ INITIALISATION DU PROGRAMME ################");        
+        
         labels[origin_id] = new LabelStar(origin_node, false, 0, 
                             null,data);
         tasDij.insert(labels[origin_id]);
@@ -52,8 +52,8 @@ public class AStarAlgorithm extends DijkstraAlgorithm {
         //#############################
         //ALGORITHME
         //#############################
-
-        System.out.println("################ DÉBUT DE L'ALGORITHME ################");
+        //System.out.println("################ DÉBUT DE L'ALGORITHME ################");
+        
         while (!tasDij.isEmpty()){
             Label current_label = (Label) tasDij.deleteMin();       //Current Label
             Node  current_node  = current_label.GetSommetCourant(); //Current Node
@@ -61,7 +61,7 @@ public class AStarAlgorithm extends DijkstraAlgorithm {
             current_label.SetMarque(true);
             //If we have found the destination, no need to continue
             if (current_node == destination_node){
-                System.out.println("################ BREAK ################");
+                //System.out.println("################ BREAK ################");
                 break;
             }
 
@@ -99,7 +99,7 @@ public class AStarAlgorithm extends DijkstraAlgorithm {
                 }
             }            
         }
-        System.out.println("################ FIN DE L'ALGORITHME ################");
+        //System.out.println("################ FIN DE L'ALGORITHME ################");
 
         
         // Destination has no predecessor, the solution is infeasible...
