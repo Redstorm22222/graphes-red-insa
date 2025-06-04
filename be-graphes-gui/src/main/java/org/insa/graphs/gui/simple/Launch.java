@@ -1,7 +1,5 @@
 package org.insa.graphs.gui.simple;
 
-//import static org.junit.Assert.assertEquals;
-
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.io.BufferedInputStream;
@@ -175,51 +173,70 @@ public class Launch {
         }
     }
 
-    public static void Compare_Dijkstra_AStar(ShortestPathData data)throws FailTest {
+    public static void Benchmark_Dijkstra_AStar(String map, int [] Coords, String [] description)throws FailTest,Exception {
+        //###############################
+        // GENERATION DU GRAPHE
+        //###############################
+        Graph graph;
+        String full_mapName ="/mnt/commetud/3eme Annee MIC/Graphes-et-Algorithmes/Maps/" + map + ".mapgr";
+        try (GraphReader reader = new BinaryGraphReader(new DataInputStream(
+            new BufferedInputStream(new FileInputStream(full_mapName))))) {
+        graph = reader.read();
+        }
+        
         //###############################
         // EXECUTION DES ALGORITHMES
         //###############################
+        for (int i = 0; i < Coords.length/2 ; i++){
+            System.out.println("Test n°" + i + "----------------------------------------");
+            System.out.println(description[i]);
+            Node originNode = graph.get(Coords[i]);
+            Node destinationNode = graph.get(Coords[i+1]); 
+            ShortestPathData data = new ShortestPathData(graph, originNode, destinationNode, ArcInspectorFactory.getAllFilters().get(0));
 
-        //instantiate time variables 
-        long startTime ;
-        long endTime ;
-        long executionTime ;
-        
-        System.out.println("Construction des tests...");
-        //this takes a lot of time so let's do it before running the algorithms
-        AStarAlgorithm astar = new AStarAlgorithm(data);
-        DijkstraAlgorithm dijkstra = new DijkstraAlgorithm(data);
+            //instantiate time variables 
+            long startTime ;
+            long endTime ;
+            long executionTime ;
+            
+            //this takes a lot of time so let's do it before running the algorithms
+            AStarAlgorithm astar = new AStarAlgorithm(data);
+            DijkstraAlgorithm dijkstra = new DijkstraAlgorithm(data);
 
-        System.out.println("Dijkstra ready to start");
-        //Running Dijkstra algorithm first
-        startTime = System.nanoTime();
-        ShortestPathSolution resultat_dijkstra = dijkstra.run();
-        endTime = System.nanoTime();
-        executionTime = (endTime - startTime) / 1000000;
-        System.out.println("Dijkstra finished in "+ executionTime + "ms");
+            //System.out.println("Dijkstra ready to start");
+            //Running Dijkstra algorithm first
+            startTime = System.nanoTime();
+            ShortestPathSolution resultat_dijkstra = dijkstra.run();
+            endTime = System.nanoTime();
+            executionTime = (endTime - startTime) / 1000000;
+            System.out.println("-->Dijkstra finished in "+ executionTime + "ms");
 
-        System.out.println("A-Star ready to start");
-        //Then run A-star algorithm
-        startTime = System.nanoTime();
-        ShortestPathSolution resultat_astar = astar.run();
-        endTime = System.nanoTime();
-        executionTime = (endTime - startTime) / 1000000;
-        System.out.println("Dijkstra finished in "+ executionTime + "ms");
+            //System.out.println("A-Star ready to start");
+            //Then run A-star algorithm
+            startTime = System.nanoTime();
+            ShortestPathSolution resultat_astar = astar.run();
+            endTime = System.nanoTime();
+            executionTime = (endTime - startTime) / 1000000;
+            System.out.println("-->A-Star finished in "+ executionTime + "ms");
 
-        //###############################
-        // VERIFICATION 
-        //###############################
-        AssertValid(resultat_dijkstra.getPath());
-        AssertValid(resultat_astar.getPath());
-        if (data.getMode() == Mode.LENGTH){
-            AssertEquals(resultat_dijkstra.getPath().getLength(),resultat_astar.getPath().getLength());
-            AffichageDistance("Dijkstra  ", resultat_dijkstra.getPath().getLength());
-            AffichageDistance("A-Star    ", resultat_astar.getPath().getLength());
-        }else{
-            AssertEquals(resultat_dijkstra.getPath().getMinimumTravelTime(),resultat_astar.getPath().getMinimumTravelTime());
-            AffichageDuration("Dijkstra  ",resultat_dijkstra.getPath().getMinimumTravelTime());
-            AffichageDuration("A-Star    ",resultat_astar.getPath().getMinimumTravelTime());
+            //###############################
+            // VERIFICATION 
+            //###############################
+            AssertValid(resultat_dijkstra.getPath());
+            AssertValid(resultat_astar.getPath());
+            if (data.getMode() == Mode.LENGTH){
+                AssertEquals(resultat_dijkstra.getPath().getLength(),resultat_astar.getPath().getLength());
+                AffichageDistance("Dijkstra  ", resultat_dijkstra.getPath().getLength());
+                AffichageDistance("A-Star    ", resultat_astar.getPath().getLength());
+            }else{
+                AssertEquals(resultat_dijkstra.getPath().getMinimumTravelTime(),resultat_astar.getPath().getMinimumTravelTime());
+                AffichageDuration("Dijkstra  ",resultat_dijkstra.getPath().getMinimumTravelTime());
+                AffichageDuration("A-Star    ",resultat_astar.getPath().getMinimumTravelTime());
+            }
         }
+        
+
+        
         
     }
 
@@ -249,46 +266,9 @@ public class Launch {
         }
     }
 
-    public static void Check(ShortestPathData data, Drawing draw) throws Exception{
-        //###############################
-        // EXECUTION DES ALGORITHMES
-        //###############################
-        System.out.println("Execution des 2 algorithmes...");
-        DijkstraAlgorithm dijkstra = new DijkstraAlgorithm(data);
-        BellmanFordAlgorithm bellman = new BellmanFordAlgorithm(data);
-
-        ShortestPathSolution resultat_dijkstra = dijkstra.run();
-        ShortestPathSolution resultat_bellman = bellman.run();
-
-        //###############################
-        // TRACE DES RESULTATS
-        //###############################
-        System.out.println("Représentations des solutions trouvées sur le graphe...");
-        Graph graph = data.getGraph();
-        // create the drawing
-
-        draw.drawGraph(graph);
-        // draw the path on the drawing
-        draw.drawPath(resultat_dijkstra.getPath(),false);
-        draw.drawPath(resultat_bellman.getPath(),false);
-
-        //###############################
-        // VERIFICATION 
-        //###############################
-        System.out.println("Vérifications de l'égalité entre les solutions trouvées...");
-        try {
-            AssertEquals(resultat_dijkstra.getPath().getLength(),resultat_bellman.getPath().getLength());
-            System.out.println("Chemin trouvé par Bellman : " + resultat_bellman.getPath().getLength() + " km.");
-            System.out.println("Chemin trouvé par Dijkstra : " + resultat_dijkstra.getPath().getLength() + " km.");
-            System.out.println("Les 3 algorithmes renvoient des résultats cohérents et similaires !");
-        }catch(FailTest e){
-            System.out.println(e);
-        }
-}
-
     public static ShortestPathData BuildTest(int originNode_id, int destinationNode_id, String map, int arcinspector) throws Exception {
         Graph graph;
-        String full_mapName ="/home/eloi/Bureau/cartes/" + map + ".mapgr";
+        String full_mapName ="/mnt/commetud/3eme Annee MIC/Graphes-et-Algorithmes/Maps/" + map + ".mapgr";
         try (GraphReader reader = new BinaryGraphReader(new DataInputStream(
             new BufferedInputStream(new FileInputStream(full_mapName))))) {
 
@@ -301,7 +281,7 @@ public class Launch {
 
     public static ShortestPathData BuildRandomTest(String map, int arcinspector) throws Exception {
         Graph graph;
-        String full_mapName ="/home/eloi/Bureau/cartes/" + map + ".mapgr";
+        String full_mapName ="/mnt/commetud/3eme Annee MIC/Graphes-et-Algorithmes/Maps/" + map + ".mapgr";
         try (GraphReader reader = new BinaryGraphReader(new DataInputStream(
             new BufferedInputStream(new FileInputStream(full_mapName))))) {
 
@@ -313,47 +293,6 @@ public class Launch {
         Node destinationNode = graph.get(r.nextInt(bound)); 
         return new ShortestPathData(graph, originNode, destinationNode, ArcInspectorFactory.getAllFilters().get(arcinspector));
     }
-
-    /*
-    public static void runFullTest(Graph graph, int originId, int destinationId, Drawing draw) throws Exception {
-        Node origin = graph.get(originId);
-        Node destination = graph.get(destinationId);
-        List<Mode> modes = List.of(Mode.LENGTH, Mode.TIME);
-        for (Mode mode : modes) {
-            ShortestPathData data = new ShortestPathData(
-                    graph,
-                    origin,
-                    destination,
-                    // On choisit l’ArcInspector en fonction du Mode :
-                    //  -> si Mode.LENGTH, on prend l’inspecteur “distance” (index 0)
-                    //  -> si Mode.TIME, on prend l’inspecteur “temps” (index 1)
-                    ArcInspectorFactory.getAllFilters().get(
-                        (mode == Mode.LENGTH) ? 0 : 1
-                    )
-            );
-            System.out.println("\n===== Mode de test : " + mode + " =====");
-            if (!origin.equals(destination)) {
-                System.out.println("→ Test d’infaisable (origin ≠ dest)");
-                Test_Infeasible(data);
-            } else {
-                System.out.println("→ Test de chemin nul (origin == dest)");
-                Compare_Dijkstra_Path(data);
-            }
-            System.out.println("→ Vérif. Dijkstra Path pour le coût (" + mode + ")");
-            Compare_Dijkstra_Path(data);
-            System.out.println("→ Vérif. Dijkstra Bellman‐Ford (" + mode + ")");
-            Compare_Dijkstra_Bellman(data);
-            if (draw != null) {
-                System.out.println("→ Trace des chemins trouvés dans le Drawing…");
-                draw.drawGraph(graph);
-                ShortestPathSolution solDij = new DijkstraAlgorithm(data).run();
-                ShortestPathSolution solBel = new BellmanFordAlgorithm(data).run();
-                draw.drawPath(solDij.getPath(), false);
-                draw.drawPath(solBel.getPath(), false);
-            }
-        }
-    }
-     */
 
     public static void main(String[] args) throws Exception, FailTest {
 
@@ -385,17 +324,18 @@ public class Launch {
             Test_Infeasible(data,0);
             Test_Infeasible(data,1);
 
+            //Autre test si besoin mais energivore car ouvre la carte de france
             //Corse
             //Marseille
-            System.out.println("Test 4 : FRANCE METROPOLITAINE : Corse --> Marseille ------");
+            /* System.out.println("Test 4 : FRANCE METROPOLITAINE : Corse --> Marseille ------");
             data = BuildTest(824699, 402019, "france", 0); 
             Test_Infeasible(data,0);
-            Test_Infeasible(data,1);
+            Test_Infeasible(data,1); */
 
 
             System.out.println("\n✅ All tests validated");
         } catch (FailTest e) {
-            System.out.println("❌ FAIL : TESTS INFAISABLES");
+            System.out.println("\n❌ FAIL : TESTS INFAISABLES");
         }
 
 
@@ -416,7 +356,7 @@ public class Launch {
 
             System.out.println("\n✅ All tests validated");
         } catch (FailTest e) {
-            System.out.println("❌ FAIL : TESTS CHEMINS NULS");
+            System.out.println("\n❌ FAIL : TESTS CHEMINS NULS");
         }
 
 
@@ -455,9 +395,9 @@ public class Launch {
             Wave_Short_Test(1,TestsBordeaux,"bordeaux",2);
 
 
-            System.out.println("✅ All tests validated");
+            System.out.println("\n✅ All tests validated");
         } catch (FailTest e) {
-            System.out.println("❌ FAIL : TESTS CHEMINS COURTS");
+            System.out.println("\n❌ FAIL : TESTS CHEMINS COURTS");
         }
         
         
@@ -478,9 +418,9 @@ public class Launch {
             Compare_Algo_Path(data,0);
             Compare_Algo_Path(data,1);
 
-            System.out.println("✅ All tests validated");
+            System.out.println("\n✅ All tests validated");
         } catch (FailTest e) {
-            System.out.println("❌ FAIL : TESTS CHEMINS LONGS");
+            System.out.println("\n❌ FAIL : TESTS CHEMINS LONGS");
         }
 
 
@@ -492,26 +432,25 @@ public class Launch {
         System.out.println("####### COMPARAISON DIJKSTRA / ASTAR SUR LONGS CHEMINS #########");
         System.out.println("################################################################\n");
         try{
-            System.out.println("Test 1 : Bayonne --> Perpignan en distance");
-            data = BuildTest(6380012, 9118804, "france", 0); 
-            Compare_Dijkstra_AStar(data);
+            int [] BenchmarkFrance = {
+                8471786,1351755,
+                727561 ,1052452,
+                2268864,2573500,
+                3521661,2396554};
+            String [] DescriptionBenchmarkFrance = {
+                "Orléans -> Clermont-Ferrand, Dijkstra non borné",
+                "Paris -> Reims, Dijkstra non borné",
+                "Côte Atlantique -> Nord de Toulouse, Dijkstra borné de moitié",
+                "Bayonne -> Pau, Dijkstra borné aux trois quarts "};
+            Benchmark_Dijkstra_AStar("france",BenchmarkFrance,DescriptionBenchmarkFrance);
 
-            //heap space error
-
-            System.out.println("Test 2 : Bordeaux --> Marseille en temps");
-            data = BuildTest(5563985, 1760667, "france", 2); 
-            Compare_Dijkstra_AStar(data);
-            System.out.println("Test 3 : Toulon --> Annecy à pied en temps");
-            data = BuildTest(5563985, 1760667, "france", 3); 
-            Compare_Dijkstra_AStar(data);
-            
             
             
             
 
-            System.out.println("✅ All tests validated");
+            System.out.println("\n✅ All tests validated");
         } catch (FailTest e) {
-            System.out.println("❌ FAIL : COMPARAISONS DIJKSTRA / ASTAR");
+            System.out.println("\n❌ FAIL : COMPARAISONS DIJKSTRA / ASTAR");
         }
 
 
